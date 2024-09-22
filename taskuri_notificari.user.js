@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Trimitere Task si Notificari
-// @namespace    http://tampermonkey.net/
+// @namespace    https://kitaro.arad/taskuri.notificari.email
 // @version      4.0
 // @description  Sistem de management taskuri si notificari
 // @author       ORCT_AR
