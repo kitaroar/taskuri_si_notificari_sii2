@@ -440,13 +440,13 @@
 
     // Stilizare buton
     notificationButton.style.position = 'fixed'; // Facem butonul vizibil permanent
-    notificationButton.style.top = '7px'; // Plasăm butonul în colțul din dreapta jos
-    notificationButton.style.right = '350px';
+    notificationButton.style.top = '0px'; // Plasăm butonul în colțul din dreapta jos
+    notificationButton.style.right = '230px';
     notificationButton.style.width = '48px'; // Setăm lățimea egală cu înălțimea
     notificationButton.style.height = '48px';
     notificationButton.style.padding = '10px';
     notificationButton.style.borderRadius = '50%'; // Button round like a bell
-    notificationButton.style.fontSize = '24px'; // Size of the bell icon
+    notificationButton.style.fontSize = '22px'; // Size of the bell icon
     notificationButton.style.color = '#FFF';
     notificationButton.style.backgroundColor = 'transparent';
     notificationButton.style.border = '0px solid white';
