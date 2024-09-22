@@ -10,8 +10,8 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
 // @connect      onrc.eu.org
-// @updateURL    https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/Trimitere%20Task%20si%20Notificari.user.js
-// @downloadURL  https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/Trimitere%20Task%20si%20Notificari.user.js
+// @updateURL    https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/taskuri_notificari.user.js
+// @downloadURL  https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/taskuri_notificari.user.js
 // ==/UserScript==
 
 (function() {
