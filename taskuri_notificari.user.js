@@ -158,13 +158,14 @@
 
         // Create message text
         const messageText = document.createElement('p');
+        messageText.style.marginTop = '20px';
         messageText.innerHTML = message;
 
         // Create OK button
         const okButton = document.createElement('button');
         okButton.innerHTML = 'Închide';
         okButton.style.marginTop = '10px';
-        okButton.style.padding = '10px 25px';
+        okButton.style.padding = '8px 16px';
         okButton.style.backgroundColor = 'Tomato';
         okButton.style.color = 'White';
         okButton.style.fontWeight = 'bold';
@@ -190,7 +191,7 @@
         document.body.appendChild(messageModal);
     }
 
-    //-----Modal Window----------------------------------------------------------
+    //-----Afisare Taskuri--------------------------------------------------
 
     // Funcție pentru a actualiza punctul de notificare
     function updateNotificationDot(numarTaskuri) {
@@ -230,7 +231,7 @@
     modalContent.style.borderRadius = '10px';
     modalContent.style.maxHeight = '90%'; // Limit height to make content scrollable
     modalContent.style.position = 'relative'; // Allow positioning child elements
-    modalContent.innerHTML = `<h3 align='center'>Taskuri pentru utilizatorul: ${getCookie('userTaskuri') || getCookie("username") || "Necunoscut"}</h3>`
+    modalContent.innerHTML = `<h3 align='center' id='userTaskuri'>Taskuri pentru utilizatorul:</h3>`;
 
     // Creăm un container scrollable pentru tabel
     const tableContainer = document.createElement('div');
@@ -253,7 +254,7 @@
         </tr>
     </thead>
     <tbody></tbody>
-`;
+    `;
 
     // Funcție pentru a formata datele
     function formatDateTime(dateString) {
@@ -314,8 +315,8 @@
     };
 
     // Adăugăm butonul "Trimite" și butonul "Închide" în container
-    buttonContainer.appendChild(submitButton);
     buttonContainer.appendChild(closeButton);
+    buttonContainer.appendChild(submitButton);
 
     // Adăugăm containerul cu butoane la conținutul modalului
     modalContent.appendChild(buttonContainer);
@@ -391,7 +392,6 @@
         const currentUser = getCookie("username");
         const taskUser = getCookie("userTaskuri");
         const fetchUser = taskUser || currentUser || "Necunoscut";
-        console.log('Fetch User: ', fetchUser);
         if (fetchUser != "Necunoscut") {
             GM_xmlhttpRequest({
                 method: "POST",
@@ -420,7 +420,8 @@
     // Run the fetchTasks function after all elements are loaded
     window.onload = function() {
         fetchTasks(); // Initial fetch
-        setInterval(fetchTasks, 10 * 60 * 1000); // Fetch every 10 minutes
+        //setInterval(fetchTasks, 10 * 60 * 1000); // Fetch every 10 minutes
+        setInterval(fetchTasks, 1 * 10 * 1000); // Fetch every 10 sec
     };
 
 
@@ -440,7 +441,7 @@
 
     // Stilizare buton
     notificationButton.style.position = 'fixed'; // Facem butonul vizibil permanent
-    notificationButton.style.top = '0px'; // Plasăm butonul în colțul din dreapta jos
+    notificationButton.style.top = '0px'; // Plasăm butonul în colțul din dreapta sus
     notificationButton.style.right = '230px';
     notificationButton.style.width = '48px'; // Setăm lățimea egală cu înălțimea
     notificationButton.style.height = '48px';
@@ -468,7 +469,6 @@
     notificationDot.style.width = '20px';
     notificationDot.style.height = '20px';
     notificationDot.style.display = 'none'; // Ascundem inițial punctul de notificare
-    //notificationDot.style.display = 'flex';
     notificationDot.style.justifyContent = 'center';
     notificationDot.style.alignItems = 'center'; // Center the bell icon
 
@@ -483,7 +483,6 @@
         const currentUser = getCookie("username");
         const taskUser = getCookie("userTaskuri");
         const fetchUser = taskUser || currentUser || "Necunoscut";
-        console.log('Fetch User: ', fetchUser);
         if (fetchUser != "Necunoscut") {
             GM_xmlhttpRequest({
                 method: "POST",
@@ -499,6 +498,8 @@
                         // Actualizăm punctul de notificare pe baza numărului de taskuri
                         updateNotificationDot(data.numarTaskuri);
                         if (data.numarTaskuri > 0) {
+                            const taskuriUser = document.querySelector('#userTaskuri'); // Target element to update
+                            taskuriUser.innerHTML = `<h3 align='center'>Taskuri pentru utilizatorul: <strong>${fetchUser}</strong></h3>`;
                             openModalTasks(data.taskuri);
                         } else {
                             //showMessageModal(data.message, 'fas fa-triangle-exclamation', 'orange');
@@ -516,7 +517,7 @@
                 }
             });
         } else {
-            showMessageModal('Lipsă nume utilizator<br/><br/>Dă LogOut apoi întră din nou în program', 'fas fa-triangle-exclamation', 'red');
+            showMessageModal('Lipsă nume utilizator<br/>Dă LogOut apoi întră din nou în program', 'fas fa-triangle-exclamation', 'red');
         }
     });
 
@@ -542,6 +543,7 @@
     setariButton.style.border = '0px solid orange';
     setariButton.style.zIndex = 2000;
     setariButton.style.cursor = 'pointer';
+    setariButton.style.display = 'none'; // Comenteaza pentru a activa schimbarea userului pentru afisare notificari
 
     // Adăugăm butonul pe document
     document.body.appendChild(setariButton);
@@ -594,19 +596,7 @@
     margin-bottom: 16px;
     `;
 
-    modalContentSetari.innerHTML = `
-    <p style="margin-bottom: 16px; font-size: 18px">Utilizatorul curent pentru notificări este: <strong>${getCookie("userTaskuri") || "Utilizator necunoscut"}</strong></p>
-    <hr>
-    <h3 style="margin-bottom: 16px;">Setează noul utilizator pentru notificări taskuri</h3>
-    <div style="${radioStyle}">
-        <input type="radio" name="username" value="${getCookie("username") || "Utilizator necunoscut"}" checked>
-        <label style="margin-left: 8px; margin-top: 5px;">${getCookie("username") || "Utilizator necunoscut"}</label>
-    </div>
-    <div style="${radioStyle}">
-        <input type="radio" name="username" value="nou">
-        <input type="text" id="nouUsername" placeholder="Alt utilizator" style="${inputStyle}">
-    </div>
-    `;
+    modalContentSetari.innerHTML = ``;
 
     // Creăm un container pentru butoane
     const setariContainer = document.createElement('div');
@@ -670,7 +660,38 @@
 
     // Deschidem modalul la click pe butonul Setări
     setariButton.onclick = () => {
-        modalSetari.style.display = 'block';
+        const usernameSetari = getCookie('username') || 'Necunoscut';
+        const usernameTaskuri = getCookie('userTaskuri') || getCookie('username') || 'Necunoscut';
+        if(usernameSetari === 'Necunoscut'){
+            showMessageModal('Username necunoscut.<br/>Te rog să dai LogOut și să intri din nou în program', 'fas fa-triangle-exclamation', 'orange');
+            return; // Prevent form to open
+        } else {
+            modalContentSetari.innerHTML = `
+               <p style="margin-bottom: 16px; font-size: 18px">Utilizatorul curent pentru notificări este: <strong>${usernameTaskuri}</strong></p>
+               <hr>
+               <h3 style="margin-bottom: 16px;">Setează noul utilizator pentru notificări taskuri</h3>
+               <div style="${radioStyle}">
+                  <input type="radio" name="username" value="${usernameSetari}" checked>
+                  <label style="margin-left: 8px; margin-top: 5px;">${usernameSetari}</label>
+               </div>
+               <div style="${radioStyle}">
+                  <input type="radio" name="username" value="nou">
+                  <input type="text" id="nouUsername" placeholder="Alt utilizator" style="${inputStyle}">
+               </div>
+            `;
+            // Adăugăm butoanele în conținutul modalului
+            setariContainer.appendChild(saveButton);
+            setariContainer.appendChild(cancelButton);
+
+            modalContentSetari.appendChild(setariContainer);
+
+            // Adăugăm conținutul modalului în modal
+            modalSetari.appendChild(modalContentSetari);
+
+            // Adăugăm modalul în document
+            document.body.appendChild(modalSetari);
+            modalSetari.style.display = 'block';
+        }
     };
 
 
@@ -687,6 +708,7 @@
     button.style.color = '#FFF';
     button.style.backgroundColor = 'orange';
     button.style.border = '1px solid orange';
+    button.style.cursor = 'pointer';
     button.style.zIndex = 1000;
 
     // Adăugăm butonul în document
@@ -697,8 +719,8 @@
 
         usernameExpeditor = getCookie('username') || 'Necunoscut';
         if(usernameExpeditor === 'Necunoscut'){
-            //showMessageModal('Username necunoscut. <br/><br/>Te rog să dai LogOut și să intri din nou în program', 'fas fa-triangle-exclamation', 'orange');
-            //return; // Prevent form to open
+            showMessageModal('Username necunoscut.<br/>Te rog să dai LogOut și să intri din nou în program', 'fas fa-triangle-exclamation', 'orange');
+            return; // Prevent form to open
         }
 
         const headers = document.querySelectorAll('th.ant-table-cell');
@@ -742,9 +764,8 @@
         if (currentUrl.indexOf('/search-applications/process') !== -1) {
             const cereriInLista = document.querySelectorAll('tr.ant-table-row').length-2; //numarul de cereri existente in lista
             if (cereriInLista===0) { // daca nu e nicio cerere
-                //console.log('no rows');
-                //showMessageModal('Nu există nici o cerere în listă', 'fas fa-triangle-exclamation', 'orange');
-                //return; // Prevent form submission
+                showMessageModal('Nu există nici o cerere în listă', 'fas fa-triangle-exclamation', 'orange');
+                return; // Prevent form submission
             }
             let selectedRow = document.querySelectorAll('tr.ant-table-row')[2]; // implicit iau prima cerere care apare in lista chiar daca nu e selectata
             if (cereriInLista>1) { // daca exista mai mult de o cerere in lista, o iau pe cea care are clasa selected-row
@@ -761,13 +782,11 @@
                     judo = cells[columnIndexes.judo]?.innerText.trim() || 'Necunoscut';
                     firma = cells[columnIndexes.firma]?.innerText.trim() || 'Necunoscut';
             } else { // daca nu exista selectedRow inseamna ca sunt mai multe in lista si nu s-a ales una
-                //console.log('no row selected');
                 showMessageModal('Selectează mai întâi o cerere din listă', 'fas fa-triangle-exclamation', 'orange');
                 return; // Prevent form submission
             }
         } else {
-            //console.log('3rd row not found');
-            showMessageModal('Nu ești în fereastra care trebuie!<br/><br/>Intră la Procesare cereri și caută un număr de dosar', 'fas fa-triangle-exclamation', 'orange');
+            showMessageModal('Nu ești în fereastra care trebuie!<br/>Intră la Procesare cereri și caută un număr de dosar', 'fas fa-triangle-exclamation', 'orange');
             return; // Prevent form submission
         }
 
@@ -984,6 +1003,22 @@
             registratorCheckbox.disabled = true; // Disable registrator checkbox if user is registrator
         }
 
+        // Add event listener to operator checkbox
+        operatorCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Uncheck the registrator checkbox when operator is checked
+                registratorCheckbox.checked = false;
+            }
+        });
+
+        // Add event listener to registrator checkbox
+        registratorCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                // Uncheck the operator checkbox when registrator is checked
+                operatorCheckbox.checked = false;
+            }
+        });
+
         // Add event listener for form submission
         document.getElementById('myForm').addEventListener('submit', function(event) {
             event.preventDefault();
@@ -1043,10 +1078,6 @@
                 usernameDestinatar = mailJudet;
             }
 
-            // Log the form data
-            //console.log("Mesaj de trimis:", formData);
-            //console.log("Destinatar: ", usernameDestinatar);
-
             // Call function to collect page data and submit everything
             collectDataAndSubmit();
 
@@ -1077,50 +1108,59 @@
             formData: formData,
         })
 
-        console.log("Date transmise: ", dateDeTrimis);
+        // Trimiterea datelor către Server Taskuri prin POST request
+        if (usernameDestinatar != mailJudet) {
+            //console.log("Date transmise: ", dateDeTrimis);
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: "https://onrc.eu.org/api/administrator/adauga-task",
+                //url: "http://local.onrc.eu.org:3500/api/administrator/adauga-task",
+                headers: { "Content-Type": "application/json" },
+                data: dateDeTrimis,
+                onload: function(response) {
+                    try {
+                        // Parse the JSON response text
+                        var data = JSON.parse(response.responseText);
+                        //console.log("Email Utilizator:", data.emailUtilizator);
+                        //console.log("Răspuns de API:", response.responseText);
+                        //showMessageModal(data.message, 'fas fa-triangle-exclamation', 'orange');
+                        showToast(data.message, 'success', 6000);
 
-        // Trimiterea datelor către Google Apps Script prin POST request
-        GM_xmlhttpRequest({
-            method: "POST",
-            url: "https://onrc.eu.org/api/administrator/adauga-task",
-            //url: "http://local.onrc.eu.org:3500/api/administrator/adauga-task",
-            headers: { "Content-Type": "application/json" },
-            data: dateDeTrimis,
-            onload: function(response) {
-                try {
-                    // Parse the JSON response text
-                    var data = JSON.parse(response.responseText);
-                    //console.log("Email Utilizator:", data.emailUtilizator);
-                    //console.log("Răspuns de API:", response.responseText);
-                    //showMessageModal(data.message, 'fas fa-triangle-exclamation', 'orange');
-                    showToast(data.message, 'success', 6000);
+                        let emailDestinatar = data.emailUtilizator || 'Introdu adresa de email';
+                        let subiect = 'Referitor la cererea: ' + numarInregistrare + ' din ' + dataInregistrare; // Subiectul emailului
+                        let corpEmail = 'Vă rugăm să remediați cererea: ' + numarInregistrare + ' din ' + dataInregistrare + '\n\nProbleme semnalate: ' + formData;
+                        if (data.emailDestinatar2 && data.emailDestinatar2.includes('@')) {
+                            emailDestinatar += ',' + data.emailDestinatar2; // Add Destinatar2 to the recipients list if valid
+                        }
+                        if (mailJudet && mailJudet.includes('@') && mailJudet != emailDestinatar) {
+                            emailDestinatar += ',' + mailJudet; // Add mailJudet to the recipients list if valid
+                        }
 
-                    let emailDestinatar = data.emailUtilizator || 'Introdu adresa de email';
-                    let subiect = 'Referitor la cererea: ' + numarInregistrare + ' din ' + dataInregistrare; // Subiectul emailului
-                    let corpEmail = 'Vă rugăm să remediați cererea: ' + numarInregistrare + ' din ' + dataInregistrare + '\n\nProbleme semnalate: ' + formData;
-                    if (data.emailDestinatar2 && data.emailDestinatar2.includes('@')) {
-                        emailDestinatar += ',' + data.emailDestinatar2; // Add Destinatar2 to the recipients list if valid
+                        // Construim URL-ul de tip mailto
+                        let mailtoLink = 'mailto:' + emailDestinatar + '?subject=' + encodeURIComponent(subiect) + '&body=' + encodeURIComponent(corpEmail);
+
+                        // Deschidem clientul de email implicit
+                        window.location.href = mailtoLink;
+
+                    } catch (e) {
+                        console.error("Eroare la primirea răspunsului JSON:", e);
+                        showMessageModal('A apărut o eroare la primirea răspunsului', 'fas fa-triangle-exclamation', 'orange');
                     }
-                    if (mailJudet && mailJudet.includes('@') && mailJudet != emailDestinatar) {
-                        emailDestinatar += ',' + mailJudet; // Add mailJudet to the recipients list if valid
-                    }
-
-                    // Construim URL-ul de tip mailto
-                    let mailtoLink = 'mailto:' + emailDestinatar + '?subject=' + encodeURIComponent(subiect) + '&body=' + encodeURIComponent(corpEmail);
-
-                    // Deschidem clientul de email implicit
-                    window.location.href = mailtoLink;
-
-                } catch (e) {
-                    console.error("Eroare la primirea răspunsului JSON:", e);
-                    showMessageModal('A apărut o eroare la primirea răspunsului', 'fas fa-triangle-exclamation', 'orange');
+                },
+                onerror: function(response) {
+                    console.log("Eroare la trimiterea datelor:", response);
+                    showMessageModal('A apărut o eroare la trimiterea datelor', 'fas fa-triangle-exclamation', 'orange');
                 }
-            },
-            onerror: function(response) {
-                console.log("Eroare la trimiterea datelor:", response);
-                showMessageModal('A apărut o eroare la trimiterea datelor', 'fas fa-triangle-exclamation', 'orange');
-            }
-        });
+            });
+        } else {
+            let emailDestinatar = mailJudet;
+            let subiect = 'Referitor la cererea: ' + numarInregistrare + ' din ' + dataInregistrare; // Subiectul emailului
+            let corpEmail = 'Vă rugăm să remediați cererea: ' + numarInregistrare + ' din ' + dataInregistrare + '\n\nProbleme semnalate: ' + formData;
+            // Construim URL-ul de tip mailto
+            let mailtoLink = 'mailto:' + emailDestinatar + '?subject=' + encodeURIComponent(subiect) + '&body=' + encodeURIComponent(corpEmail);
+            // Deschidem clientul de email implicit
+            window.location.href = mailtoLink;
+        }
     }
 
 })();
