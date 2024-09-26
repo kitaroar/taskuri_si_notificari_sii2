@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Trimitere Task si Notificari
 // @namespace    https://kitaro.arad/taskuri.notificari.email
-// @version      4.0
+// @version      4.2
 // @description  Sistem de management taskuri si notificari
 // @author       ORCT_AR
 // @match        *://rc-prod.onrc.sii/*
@@ -12,6 +12,7 @@
 // @connect      onrc.eu.org
 // @updateURL    https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/taskuri_notificari.user.js
 // @downloadURL  https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/taskuri_notificari.user.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js
 // ==/UserScript==
 
 (function() {
@@ -33,13 +34,28 @@
     let formData = ''; // Will store form data (checkboxes and message)
     let taskuri = []; // Define taskuri globally
 
+    // Variabile pentru test -> COMENTEAZĂ ÎN PRODUCȚIE
+    //usernameExpeditor = 'adriana.mirea';
+    //numarInregistrare = '9999999';
+    //dataInregistrare = '31.12.2024';
+    //judcerere = 'Arad';
+    //registrator = 'alexandra.decean';
+    //operator = 'madalina.manda';
+    //usernameDestinatar = JSON.stringify({registrator: registrator, operator: operator});
+    //usernameDestinatar = 'alexandra.decean';
+    //firma = 'TEST SRL';
+
     //------Cookies------------------------------------------------------------
 
     // Function to get the value of a cookie by name
     function getCookie(name) {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
+        if (parts.length === 2) {
+            return parts.pop().split(';').shift().toLowerCase();
+        }
+        return null;
+        //return 'adriana.mirea';
     }
 
     // Funcție pentru a seta un cookie
@@ -50,7 +66,7 @@
             date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
             expires = "; expires=" + date.toUTCString();
         }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        document.cookie = name + "=" + (value.toLowerCase() || "") + expires + "; path=/";
     }
 
     //------Toast Message---------------------------------------------------------
@@ -78,13 +94,13 @@
     }
 
     .toast.success {
-      background-color: PaleGreen;
-      border: 2px solid DarkGreen;
+      background-color: HoneyDew;
+      border: 1px solid PaleGreen;
     }
 
     .toast.error {
-      background-color: PeachPuff;
-      border: 2px solid DarkRed;
+      background-color: SeaShell;
+      border: 1px solid MistyRose;
     }
 
     .toast.show {
@@ -191,7 +207,7 @@
         document.body.appendChild(messageModal);
     }
 
-    //-----Afisare Taskuri--------------------------------------------------
+    //-----Afisare Taskuri Destinatar--------------------------------------------------
 
     // Funcție pentru a actualiza punctul de notificare
     function updateNotificationDot(numarTaskuri) {
@@ -231,7 +247,7 @@
     modalContent.style.borderRadius = '10px';
     modalContent.style.maxHeight = '90%'; // Limit height to make content scrollable
     modalContent.style.position = 'relative'; // Allow positioning child elements
-    modalContent.innerHTML = `<h3 align='center' id='userTaskuri'>Taskuri pentru utilizatorul:</h3>`;
+    modalContent.innerHTML = `<h3 align='center' id='userTaskuri'>Taskuri pentru destinatarul:</h3>`;
 
     // Creăm un container scrollable pentru tabel
     const tableContainer = document.createElement('div');
@@ -280,6 +296,20 @@
     // Adăugăm containerul cu tabelul la modal
     modalContent.appendChild(tableContainer);
 
+    const closeButtonXbell = document.createElement('span');
+    closeButtonXbell.innerHTML = '<i class="fa-solid fa-rectangle-xmark"></i>';
+    closeButtonXbell.style.position = 'absolute';
+    closeButtonXbell.style.top = '0px';
+    closeButtonXbell.style.right = '8px';
+    closeButtonXbell.style.padding = '0px 0px';
+    closeButtonXbell.style.borderRadius = '4px';
+    closeButtonXbell.style.cursor = 'pointer';
+    closeButtonXbell.style.fontSize = '32px';
+    closeButtonXbell.style.fontWeight = 'bolder';
+    closeButtonXbell.style.color = 'Tomato';
+
+    modalContent.appendChild(closeButtonXbell);
+
     // Creăm un container pentru butoane
     const buttonContainer = document.createElement('div');
     buttonContainer.style.display = 'flex';
@@ -302,7 +332,7 @@
     const closeButton = document.createElement('button');
     closeButton.innerHTML = 'Închide';
     closeButton.style.padding = '10px 20px';
-    closeButton.style.backgroundColor = 'Salmon';
+    closeButton.style.backgroundColor = 'Tomato';
     closeButton.style.color = 'white';
     closeButton.style.border = 'none';
     closeButton.style.fontWeight = 'bold';
@@ -313,6 +343,10 @@
     closeButton.onclick = () => {
         modal.style.display = 'none'; // Ascundem modalul când se apasă pe butonul close
     };
+
+    closeButtonXbell.addEventListener('click', function () {
+        modal.style.display = 'none'; // Ascundem modalul când se apasă pe butonul X
+    });
 
     // Adăugăm butonul "Trimite" și butonul "Închide" în container
     buttonContainer.appendChild(closeButton);
@@ -330,7 +364,7 @@
         // Trimitem cererea POST pentru a marca taskurile ca finalizate
         GM_xmlhttpRequest({
             method: "POST",
-            url: "http://onrc.eu.org/api/client/finalizeaza-taskuri",
+            url: "https://onrc.eu.org/api/client/finalizeaza-taskuri",
             //url: "http://local.onrc.eu.org:3500/api/client/finalizeaza-taskuri",
             headers: { "Content-Type": "application/json" },
             data: JSON.stringify({ids: taskIds}),
@@ -361,6 +395,7 @@
 
     // Funcție pentru a popula tabelul cu taskuri
     function populateTable(taskuri) {
+        //console.log('taskuri: ', taskuri);
         const tbody = table.querySelector('tbody');
         tbody.innerHTML = ''; // Clear previous rows
         taskuri.forEach(task => {
@@ -395,7 +430,7 @@
         if (fetchUser != "Necunoscut") {
             GM_xmlhttpRequest({
                 method: "POST",
-                url: "http://onrc.eu.org/api/client/citeste-taskuri",
+                url: "https://onrc.eu.org/api/client/citeste-taskuri",
                 //url: "http://local.onrc.eu.org:3500/api/client/citeste-taskuri",
                 headers: { "Content-Type": "application/json" },
                 data: JSON.stringify({ username: fetchUser }),
@@ -403,8 +438,13 @@
                     try {
                         const data = JSON.parse(response.responseText);
                         const numarTaskuri = data.numarTaskuri; // Assuming this returns the new task count
+                        const numarTaskuriExp = data.numarTaskuriExp; // Assuming this returns the new task count
+
+                        //console.log('Nr. taskuri Dest: ', numarTaskuri);
+                        //console.log('Nr. taskuri Exp: ', numarTaskuriExp);
 
                         updateNotificationDot(numarTaskuri); // Update notification dot
+                        updateNotificationDotPlane(numarTaskuriExp);
 
                     } catch (e) {
                         console.error("Eroare la primirea răspunsului JSON:", e);
@@ -420,18 +460,12 @@
     // Run the fetchTasks function after all elements are loaded
     window.onload = function() {
         fetchTasks(); // Initial fetch
-        //setInterval(fetchTasks, 10 * 60 * 1000); // Fetch every 10 minutes
-        setInterval(fetchTasks, 1 * 10 * 1000); // Fetch every 10 sec
+        setInterval(fetchTasks, 10 * 60 * 1000); // Fetch every 10 minutes
+        //setInterval(fetchTasks, 1 * 10 * 1000); // Fetch every 10 sec
     };
 
 
     //----Notificari--------------------------------------------------------
-
-    // Include Font Awesome for the bell icon
-    const fontAwesomeLink = document.createElement('link');
-    fontAwesomeLink.rel = 'stylesheet';
-    fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
-    document.head.appendChild(fontAwesomeLink);
 
     // Creăm un buton pe pagina web pentru notificări
     const notificationButton = document.createElement('button');
@@ -442,7 +476,7 @@
     // Stilizare buton
     notificationButton.style.position = 'fixed'; // Facem butonul vizibil permanent
     notificationButton.style.top = '0px'; // Plasăm butonul în colțul din dreapta sus
-    notificationButton.style.right = '230px';
+    notificationButton.style.right = '15%';
     notificationButton.style.width = '48px'; // Setăm lățimea egală cu înălțimea
     notificationButton.style.height = '48px';
     notificationButton.style.padding = '10px';
@@ -495,6 +529,8 @@
                         // Parse the JSON response text
                         var data = JSON.parse(response.responseText);
                         //console.log("Răspuns de API:", response.responseText);
+                        //console.log('Nr. taskuri Dest: ', data.numarTaskuri);
+                        //console.log('Nr. taskuri Exp: ', data.numarTaskuriExp);
                         // Actualizăm punctul de notificare pe baza numărului de taskuri
                         updateNotificationDot(data.numarTaskuri);
                         if (data.numarTaskuri > 0) {
@@ -503,7 +539,322 @@
                             openModalTasks(data.taskuri);
                         } else {
                             //showMessageModal(data.message, 'fas fa-triangle-exclamation', 'orange');
-                            showToast(data.message, 'error', 7000);
+                            showToast(data.message, 'error', 3500);
+                        }
+
+                    } catch (e) {
+                        console.error("Eroare la primirea răspunsului JSON:", e);
+                        showMessageModal('A apărut o eroare la primirea răspunsului de la server', 'fas fa-triangle-exclamation', 'red');
+                    }
+                },
+                onerror: function(response) {
+                    console.log("Eroare la trimiterea datelor:", response);
+                    showMessageModal('A apărut o eroare la trimiterea datelor', 'fas fa-triangle-exclamation', 'red');
+                }
+            });
+        } else {
+            showMessageModal('Lipsă nume utilizator<br/>Dă LogOut apoi întră din nou în program', 'fas fa-triangle-exclamation', 'red');
+        }
+    });
+
+    //--------Buton pentru Notificări Expeditor------------------------------------------------
+
+    // Funcție pentru a actualiza punctul de notificare
+    function updateNotificationDotPlane(numarTaskuri) {
+        if (numarTaskuri > 0) {
+            planeNotificationDot.innerHTML = numarTaskuri; // Afișăm numărul de taskuri
+            planeNotificationDot.style.display = 'flex'; // Afișăm punctul de notificare
+        } else {
+            planeNotificationDot.style.display = 'none'; // Ascundem punctul de notificare dacă nu există taskuri
+        }
+    }
+
+    function openModalTasksPlane(taskuri) {
+        // Populăm tabelul modal cu taskuri
+        populateTablePlane(taskuri); // Populate modal with tasks
+        modalPlane.style.display = 'block'; // Afișăm modalul
+    }
+
+    // Creăm un modal pentru a afișa taskurile
+    const modalPlane = document.createElement('div');
+    modalPlane.style.position = 'fixed';
+    modalPlane.style.top = '0';
+    modalPlane.style.left = '0';
+    modalPlane.style.width = '100%';
+    modalPlane.style.height = '100%';
+    modalPlane.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    modalPlane.style.display = 'none'; // Ascundem modalul inițial
+    modalPlane.style.zIndex = 9999;
+    modalPlane.style.overflow = 'auto'; // Make modal scrollable
+
+    // Conținutul modalului
+    const modalContentPlane = document.createElement('div');
+    modalContentPlane.style.backgroundColor = 'white';
+    modalContentPlane.style.margin = '5% auto';
+    modalContentPlane.style.padding = '20px';
+    modalContentPlane.style.paddingTop = '1px';
+    modalContentPlane.style.width = '80%';
+    modalContentPlane.style.borderRadius = '10px';
+    modalContentPlane.style.maxHeight = '90%'; // Limit height to make content scrollable
+    modalContentPlane.style.position = 'relative'; // Allow positioning child elements
+    modalContentPlane.innerHTML = `<h3 align='center' id='userTaskuriPlane'>Taskuri trimise de utilizatorul:</h3>`;
+
+    // Creăm un container scrollable pentru tabel
+    const tableContainerPlane = document.createElement('div');
+    tableContainerPlane.style.maxHeight = '550px'; // Max height for the table scroll area
+    tableContainerPlane.style.overflowY = 'auto'; // Vertical scroll
+    tableContainerPlane.style.marginBottom = '20px'; // Space between table and buttons
+
+    // Creăm tabelul pentru taskuri
+    const tablePlane = document.createElement('table');
+    tablePlane.style.width = '100%';
+    tablePlane.style.borderCollapse = 'collapse'; // Remove space between borders
+    tablePlane.innerHTML = `
+    <thead>
+        <tr>
+            <th style="border: 1px solid black; padding: 8px;">Data task</th>
+            <th style="border: 1px solid black; padding: 8px;">Destinatar</th>
+            <th style="border: 1px solid black; padding: 8px;">Cerere</th>
+            <th style="border: 1px solid black; padding: 8px;">Problemă</th>
+            <th style="border: 1px solid black; padding: 8px; text-align: center;">Rezolvat</th>
+            <th style="border: 1px solid black; padding: 8px; text-align: center;">Inchide</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+    `;
+
+    // Funcție pentru a formata datele
+    function formatDateTimePlane(dateString) {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+        const year = date.getFullYear();
+        const time = date.toLocaleTimeString('ro-RO'); // Get time in HH:mm:ss format
+        return `${day}.${month}.${year}<br>${time}`;
+    }
+
+    // Funcție pentru a actualiza starea butonului "Trimite"
+    function updateSubmitButtonStatePlane() {
+        const checkedBoxes = tablePlane.querySelectorAll('.inchide-checkbox:checked');
+        //console.log('Checkbox activ: ', checkedBoxes.length);
+        submitButtonPlane.disabled = checkedBoxes.length === 0; // Enable button if at least one checkbox is checked
+        submitButtonPlane.style.backgroundColor = submitButtonPlane.disabled ? 'lightgrey' : 'MediumSeaGreen';
+        submitButtonPlane.style.cursor = submitButtonPlane.disabled ? 'normal' : 'pointer';
+    }
+
+    // Adăugăm tabelul la containerul scrollable
+    tableContainerPlane.appendChild(tablePlane);
+
+    // Adăugăm containerul cu tabelul la modal
+    modalContentPlane.appendChild(tableContainerPlane);
+
+    const closeButtonXPlane = document.createElement('span');
+    closeButtonXPlane.innerHTML = '<i class="fa-solid fa-rectangle-xmark"></i>';
+    closeButtonXPlane.style.position = 'absolute';
+    closeButtonXPlane.style.top = '0px';
+    closeButtonXPlane.style.right = '8px';
+    closeButtonXPlane.style.padding = '0px 0px';
+    closeButtonXPlane.style.borderRadius = '4px';
+    closeButtonXPlane.style.cursor = 'pointer';
+    closeButtonXPlane.style.fontSize = '32px';
+    closeButtonXPlane.style.fontWeight = 'bolder';
+    closeButtonXPlane.style.color = 'Tomato';
+
+    modalContentPlane.appendChild(closeButtonXPlane);
+
+    // Creăm un container pentru butoane
+    const buttonContainerPlane = document.createElement('div');
+    buttonContainerPlane.style.display = 'flex';
+    buttonContainerPlane.style.justifyContent = 'space-between';
+    buttonContainerPlane.style.marginTop = '10px'; // Add space between table and buttons
+
+    // Creăm un buton "Trimite"
+    const submitButtonPlane = document.createElement('button');
+    submitButtonPlane.disabled = true; // Disable initially
+    submitButtonPlane.innerHTML = 'Salvează';
+    submitButtonPlane.style.padding = '10px 20px';
+    submitButtonPlane.style.color = 'white';
+    submitButtonPlane.style.border = 'none';
+    submitButtonPlane.style.fontWeight = 'bold';
+    submitButtonPlane.style.borderRadius = '5px';
+    submitButtonPlane.style.cursor = submitButtonPlane.disabled ? 'normal' : 'pointer';
+    submitButtonPlane.style.backgroundColor = submitButtonPlane.disabled ? 'darkgrey' : 'MediumSeaGreen';
+
+    // Creăm un buton pentru închiderea modalului
+    const closeButtonPlane = document.createElement('button');
+    closeButtonPlane.innerHTML = 'Închide';
+    closeButtonPlane.style.padding = '10px 20px';
+    closeButtonPlane.style.backgroundColor = 'Tomato';
+    closeButtonPlane.style.color = 'white';
+    closeButtonPlane.style.border = 'none';
+    closeButtonPlane.style.fontWeight = 'bold';
+    closeButtonPlane.style.borderRadius = '5px';
+    closeButtonPlane.style.cursor = 'pointer';
+
+    // Închidem modalul la click pe butonul de închidere
+    closeButtonPlane.onclick = () => {
+        modalPlane.style.display = 'none'; // Ascundem modalul când se apasă pe butonul close
+    };
+
+    closeButtonXPlane.addEventListener('click', function () {
+        modalPlane.style.display = 'none'; // Ascundem modalul când se apasă pe butonul X
+    });
+
+    // Adăugăm butonul "Trimite" și butonul "Închide" în container
+    buttonContainerPlane.appendChild(closeButtonPlane);
+    buttonContainerPlane.appendChild(submitButtonPlane);
+
+    // Adăugăm containerul cu butoane la conținutul modalului
+    modalContentPlane.appendChild(buttonContainerPlane);
+
+    // Trimitem cererea la apăsarea butonului "Trimite"
+    submitButtonPlane.onclick = () => {
+        const checkedBoxes = tablePlane.querySelectorAll('.inchide-checkbox:checked');
+        const taskIds = Array.from(checkedBoxes).map(box => parseInt(box.getAttribute('data-task-id'))); // Collect IDs as integers
+        const totalTaskuri = tablePlane.querySelectorAll('.inchide-checkbox').length;
+
+        // Trimitem cererea POST pentru a marca taskurile ca finalizate
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: "https://onrc.eu.org/api/client/finalizeaza-taskuri",
+            //url: "http://local.onrc.eu.org:3500/api/client/finalizeaza-taskuri",
+            headers: { "Content-Type": "application/json" },
+            data: JSON.stringify({ids: taskIds, inchide: true}),
+            onload: function(response) {
+                const data = JSON.parse(response.responseText);
+                if (data.status === "success") {
+                    // Update numarTaskuri and the notification dot
+                    const numarTaskuriNou = totalTaskuri - taskIds.length;
+                    updateNotificationDotPlane(numarTaskuriNou);
+                    // Hide the modal after success
+                    modalPlane.style.display = 'none';
+                    showMessageModal(data.message, 'fas fa-clipboard-check', 'green');
+                } else {
+                    showMessageModal(data.message, 'fas fa-triangle-exclamation', 'red');
+                }
+            },
+            onerror: function() {
+                showMessageModal('Eroare la trimiterea cererii', 'fas fa-triangle-exclamation', 'red');
+            }
+        });
+    };
+
+    // Adăugăm conținutul la modal
+    modalPlane.appendChild(modalContentPlane);
+
+    // Adăugăm modalul în document
+    document.body.appendChild(modalPlane);
+
+    // Funcție pentru a popula tabelul cu taskuri
+    function populateTablePlane(taskuri) {
+        const tbody = tablePlane.querySelector('tbody');
+        tbody.innerHTML = ''; // Clear previous rows
+        taskuri.forEach(task => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td style="border: 1px solid black; padding: 8px;">${formatDateTime(task.data_creare)}</td>
+            <td style="border: 1px solid black; padding: 8px;">${task.destinatar.nume_utilizator}<br/>(${task.destinatar.email})</td>
+            <td style="border: 1px solid black; padding: 8px; text-align: center;"><strong>${task.nr_cerere}</strong><br/>${task.data_cerere}</td>
+            <td style="border: 1px solid black; padding: 8px;">${task.task}</td>
+            <td style="border: 1px solid black; padding: 8px; text-align: center;">
+                <input type="checkbox" class="readonly-checkbox" style="transform: scale(1.6); accent-color: green" ${task.finalizat ? 'checked' : ''}>
+            </td>
+            <td style="border: 1px solid black; padding: 8px; text-align: center;">
+                <input type="checkbox" class="inchide-checkbox" style="transform: scale(1.6); accent-color: green" data-task-id="${task.id}">
+            </td>
+        `;
+            tbody.appendChild(row);
+        });
+
+        // Add event listener to make checkboxes read-only
+        document.querySelectorAll('.readonly-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent the checkbox from being toggled
+            });
+        });
+
+        // Adăugăm event listener pentru fiecare checkbox după ce sunt adăugate în DOM
+        const checkboxes = tbody.querySelectorAll('.inchide-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSubmitButtonStatePlane);
+        });
+    }
+
+
+    // Creăm un alt buton pentru iconița avion de hârtie
+    const planeButton = document.createElement('button');
+
+    // Adăugăm iconița avion de hârtie
+    planeButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+
+    // Stilizare buton
+    planeButton.style.position = 'fixed';
+    planeButton.style.top = '0px'; // Plasăm la aceeași înălțime ca butonul de notificări
+    planeButton.style.right = '19%';
+    planeButton.style.width = '48px';
+    planeButton.style.height = '48px';
+    planeButton.style.padding = '10px';
+    planeButton.style.borderRadius = '50%';
+    planeButton.style.fontSize = '22px';
+    planeButton.style.color = '#FFF';
+    planeButton.style.backgroundColor = 'transparent';
+    planeButton.style.border = '0px solid white';
+    planeButton.style.zIndex = 3000;
+    planeButton.style.cursor = 'pointer';
+
+    // Punct roșu pentru notificările avion de hârtie
+    const planeNotificationDot = document.createElement('span');
+    planeNotificationDot.innerHTML = '0'; // Exemplu de notificări necitite pentru avion
+    planeNotificationDot.style.position = 'absolute';
+    planeNotificationDot.style.top = '2px';
+    planeNotificationDot.style.right = '2px';
+    planeNotificationDot.style.backgroundColor = 'Green';
+    planeNotificationDot.style.color = 'white';
+    planeNotificationDot.style.borderRadius = '50%';
+    planeNotificationDot.style.padding = '3px';
+    planeNotificationDot.style.fontSize = '12px';
+    planeNotificationDot.style.fontWeight = 'bold';
+    planeNotificationDot.style.width = '20px';
+    planeNotificationDot.style.height = '20px';
+    planeNotificationDot.style.display = 'none'; // Ascundem inițial punctul de notificare
+    planeNotificationDot.style.justifyContent = 'center';
+    planeNotificationDot.style.alignItems = 'center';
+
+    // Adăugăm punctul de notificare la butonul avion de hârtie
+    planeButton.appendChild(planeNotificationDot);
+
+    // Adăugăm butonul avion de hârtie pe document
+    document.body.appendChild(planeButton);
+
+    // Event listener pentru clic pe buton
+    planeButton.addEventListener('click', () => {
+        const currentUser = getCookie("username");
+        const taskUser = getCookie("userTaskuri");
+        const fetchUser = taskUser || currentUser || "Necunoscut";
+        if (fetchUser != "Necunoscut") {
+            GM_xmlhttpRequest({
+                method: "POST",
+                url: "https://onrc.eu.org/api/client/citeste-taskuri",
+                //url: "http://local.onrc.eu.org:3500/api/client/citeste-taskuri",
+                headers: { "Content-Type": "application/json" },
+                data: JSON.stringify({username: fetchUser}),
+                onload: function(response) {
+                    try {
+                        // Parse the JSON response text
+                        var data = JSON.parse(response.responseText);
+                        //console.log("Răspuns de API:", response.responseText);
+                        //console.log('Nr. taskuri Bell: ', data.numarTaskuri);
+                        //console.log('Nr. taskuri Plane: ', data.numarTaskuriExp);
+                        // Actualizăm punctul de notificare pe baza numărului de taskuri
+                        updateNotificationDot(data.numarTaskuri);
+                        updateNotificationDotPlane(data.numarTaskuriExp);
+                        if (data.numarTaskuriExp > 0) {
+                            const taskuriUser = document.querySelector('#userTaskuriPlane'); // Target element to update
+                            taskuriUser.innerHTML = `<h3 align='center'>Taskuri trimise de utilizatorul: <strong>${fetchUser}</strong></h3>`;
+                            openModalTasksPlane(data.taskuriExp);
+                        } else {
+                            //showMessageModal(data.message, 'fas fa-triangle-exclamation', 'orange');
+                            showToast(data.message, 'error', 3500);
                         }
 
                     } catch (e) {
@@ -619,7 +970,7 @@
     const cancelButton = document.createElement('button');
     cancelButton.innerHTML = 'Renunță';
     cancelButton.style.padding = '10px 20px';
-    cancelButton.style.backgroundColor = 'Salmon';
+    cancelButton.style.backgroundColor = 'Tomato';
     cancelButton.style.color = 'white';
     cancelButton.style.border = 'none';
     cancelButton.style.fontWeight = 'bold';
@@ -827,21 +1178,21 @@
         formContainer.style.boxShadow = '0px 4px 10px rgba(0, 0, 0, 0.1)';
 
 
-        // Create the close button
-        const closeButton = document.createElement('span');
-        closeButton.innerHTML = '<i class="fa-solid fa-rectangle-xmark"></i>';
-        closeButton.style.position = 'absolute';
-        closeButton.style.top = '0px';
-        closeButton.style.right = '8px';
-        closeButton.style.padding = '0px 0px';
-        closeButton.style.borderRadius = '4px';
-        closeButton.style.cursor = 'pointer';
-        closeButton.style.fontSize = '32px';
-        closeButton.style.fontWeight = 'bolder';
-        closeButton.style.color = 'Tomato';
+        // Create the close X button
+        const closeButtonX = document.createElement('span');
+        closeButtonX.innerHTML = '<i class="fa-solid fa-rectangle-xmark"></i>';
+        closeButtonX.style.position = 'absolute';
+        closeButtonX.style.top = '0px';
+        closeButtonX.style.right = '8px';
+        closeButtonX.style.padding = '0px 0px';
+        closeButtonX.style.borderRadius = '4px';
+        closeButtonX.style.cursor = 'pointer';
+        closeButtonX.style.fontSize = '32px';
+        closeButtonX.style.fontWeight = 'bolder';
+        closeButtonX.style.color = 'Tomato';
 
-        closeButton.addEventListener('click', function () {
-        document.body.removeChild(modalBackdrop); // Close the modal form and backdrop when 'X' is clicked
+        closeButtonX.addEventListener('click', function () {
+            document.body.removeChild(modalBackdrop); // Close the modal form and backdrop when 'X' is clicked
         });
 
         // Create the cancel button
@@ -863,7 +1214,7 @@
         });
 
         // Append the close and cancel buttons
-        formContainer.appendChild(closeButton);
+        formContainer.appendChild(closeButtonX);
         formContainer.appendChild(cancelButton);
 
         // Create the form element
@@ -1088,17 +1439,6 @@
 
     // Function to collect data from the page and submit everything
     function collectDataAndSubmit() {
-
-        // Variabile pentru test -> COMENTEAZĂ ÎN PRODUCȚIE
-        //usernameExpeditor = 'adriana.mirea';
-        //numarInregistrare = '9999999';
-        //dataInregistrare = '31.12.2024';
-        //judcerere = 'Arad';
-        //registrator = 'alexandra.decean';
-        //operator = 'madalina.manda';
-        //usernameDestinatar = JSON.stringify({registrator: registrator, operator: operator});
-        //usernameDestinatar = 'alexandra.decean';
-        //firma = 'TEST SRL';
 
         const dateDeTrimis = JSON.stringify({
             numarInregistrare: numarInregistrare,
