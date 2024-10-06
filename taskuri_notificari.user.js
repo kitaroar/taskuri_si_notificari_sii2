@@ -1,17 +1,16 @@
 // ==UserScript==
 // @name         Trimitere Task si Notificari
 // @namespace    https://kitaro.arad/taskuri.notificari.email
-// @version      4.2
+// @version      4.3
 // @description  Sistem de management taskuri si notificari
 // @author       ORCT_AR
 // @match        *://rc-prod.onrc.sii/*
-// @match        *://local.onrc.eu.org:3500/*
-// @match        *://onrc.eu.org/*
+// @match        *://taskflow.onrc.sii/*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
-// @connect      onrc.eu.org
-// @updateURL    https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/taskuri_notificari.user.js
-// @downloadURL  https://github.com/kitaroar/taskuri_si_notificari_sii2/raw/refs/heads/main/taskuri_notificari.user.js
+// @connect      taskflow.onrc.sii
+// @updateURL    https://rep.onrc.sii/monkeyscript/taskuri_notificari.user.js
+// @downloadURL  https://rep.onrc.sii/monkeyscript/taskuri_notificari.user.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js
 // ==/UserScript==
 
@@ -364,7 +363,8 @@
         // Trimitem cererea POST pentru a marca taskurile ca finalizate
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://onrc.eu.org/api/client/finalizeaza-taskuri",
+            url: "https://taskflow.onrc.sii/api/client/finalizeaza-taskuri",
+            //url: "https://onrc.eu.org/api/client/finalizeaza-taskuri",
             //url: "http://local.onrc.eu.org:3500/api/client/finalizeaza-taskuri",
             headers: { "Content-Type": "application/json" },
             data: JSON.stringify({ids: taskIds}),
@@ -430,7 +430,8 @@
         if (fetchUser != "Necunoscut") {
             GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://onrc.eu.org/api/client/citeste-taskuri",
+                url: "https://taskflow.onrc.sii/api/client/citeste-taskuri",
+                //url: "https://onrc.eu.org/api/client/citeste-taskuri",
                 //url: "http://local.onrc.eu.org:3500/api/client/citeste-taskuri",
                 headers: { "Content-Type": "application/json" },
                 data: JSON.stringify({ username: fetchUser }),
@@ -520,7 +521,8 @@
         if (fetchUser != "Necunoscut") {
             GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://onrc.eu.org/api/client/citeste-taskuri",
+                url: "https://taskflow.onrc.sii/api/client/citeste-taskuri",
+                //url: "https://onrc.eu.org/api/client/citeste-taskuri",
                 //url: "http://local.onrc.eu.org:3500/api/client/citeste-taskuri",
                 headers: { "Content-Type": "application/json" },
                 data: JSON.stringify({username: fetchUser}),
@@ -716,7 +718,8 @@
         // Trimitem cererea POST pentru a marca taskurile ca finalizate
         GM_xmlhttpRequest({
             method: "POST",
-            url: "https://onrc.eu.org/api/client/finalizeaza-taskuri",
+            url: "https://taskflow.onrc.sii/api/client/finalizeaza-taskuri",
+            //url: "https://onrc.eu.org/api/client/finalizeaza-taskuri",
             //url: "http://local.onrc.eu.org:3500/api/client/finalizeaza-taskuri",
             headers: { "Content-Type": "application/json" },
             data: JSON.stringify({ids: taskIds, inchide: true}),
@@ -834,7 +837,8 @@
         if (fetchUser != "Necunoscut") {
             GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://onrc.eu.org/api/client/citeste-taskuri",
+                url: "https://taskflow.onrc.sii/api/client/citeste-taskuri",
+                //url: "https://onrc.eu.org/api/client/citeste-taskuri",
                 //url: "http://local.onrc.eu.org:3500/api/client/citeste-taskuri",
                 headers: { "Content-Type": "application/json" },
                 data: JSON.stringify({username: fetchUser}),
@@ -1254,6 +1258,10 @@
                 <input type="checkbox" id="option6" name="options" value="Solicitare cazier">
                 <label for="option6">Solicitare cazier</label><br>
             </div>
+            <div>
+                <input type="checkbox" id="option7" name="options" value="Solicitare CUI">
+                <label for="option6">Solicitare CUI</label><br>
+            </div>
             <br/>
             <div>
                 <label for="messageBox">Alte probleme:</label><br>
@@ -1453,7 +1461,8 @@
             //console.log("Date transmise: ", dateDeTrimis);
             GM_xmlhttpRequest({
                 method: "POST",
-                url: "https://onrc.eu.org/api/administrator/adauga-task",
+                url: "https://taskflow.onrc.sii/api/administrator/adauga-task",
+                //url: "https://onrc.eu.org/api/administrator/adauga-task",
                 //url: "http://local.onrc.eu.org:3500/api/administrator/adauga-task",
                 headers: { "Content-Type": "application/json" },
                 data: dateDeTrimis,
